@@ -5,13 +5,13 @@ import gleam/string
 
 /// Convert a list into a list of size 2 tuples. 
 /// Panics on uneven-lengthed lists! This should probably return a Result instead.
-fn chunk_by_2(list: List(value)) -> List(#(value, value)) {
+fn chunk_by_2(items: List(value)) -> List(#(value, value)) {
   let tuplify = fn(l) {
     let assert [a, b] = l
     #(a, b)
   }
 
-  list
+  items
   |> list.sized_chunk(2)
   |> list.map(tuplify)
 }
@@ -44,18 +44,36 @@ fn parse_input(input: String) -> #(List(Int), List(Int)) {
 }
 
 pub fn pt_1(input: String) -> Int {
-  let #(list_a, list_b) = parse_input(input)
+  let #(left, right) = parse_input(input)
 
-  let list_a = list.sort(list_a, by: int.compare)
-  let list_b = list.sort(list_b, by: int.compare)
+  let left = list.sort(left, by: int.compare)
+  let right = list.sort(right, by: int.compare)
 
-  list.zip(list_a, list_b)
-  |> list.fold(from: 0, with: fn(acc, tuple) {
+  let difference = fn(tuple) {
     let #(a, b) = tuple
-    acc + int.absolute_value(a - b)
-  })
+    int.absolute_value(a - b)
+  }
+
+  list.zip(left, right)
+  |> list.map(difference)
+  |> list.fold(from: 0, with: int.add)
+}
+
+fn similarity(number: Int, right_list: List(Int)) -> Int {
+  let occurences =
+    right_list
+    |> list.filter(keeping: fn(x) { x == number })
+    |> list.length
+
+  number * occurences
 }
 
 pub fn pt_2(input: String) -> Int {
-  todo
+  let #(left, right) = parse_input(input)
+
+  let similarity = similarity(_, right)
+
+  left
+  |> list.map(similarity)
+  |> list.fold(from: 0, with: int.add)
 }
