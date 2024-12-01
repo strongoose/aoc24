@@ -3,18 +3,7 @@ import gleam/list
 import gleam/result
 import gleam/string
 
-/// Convert a list into a list of size 2 tuples. 
-/// Panics on uneven-lengthed lists! This should probably return a Result instead.
-fn chunk_by_2(items: List(value)) -> List(#(value, value)) {
-  let tuplify = fn(l) {
-    let assert [a, b] = l
-    #(a, b)
-  }
-
-  items
-  |> list.sized_chunk(2)
-  |> list.map(tuplify)
-}
+import aoc_2024/lib.{chunk_by_2}
 
 /// The elves have made two lists. These are provided as a single text file with two columns, i.e.
 ///   1    2
@@ -38,9 +27,8 @@ fn parse_input(input: String) -> #(List(Int), List(Int)) {
     //   List(Result(a, b)) -> Result(List(a), b)
     |> result.all()
 
-  numbers
-  |> chunk_by_2
-  |> list.unzip
+  let assert Ok(pairs) = chunk_by_2(numbers)
+  list.unzip(pairs)
 }
 
 pub fn pt_1(input: String) -> Int {
