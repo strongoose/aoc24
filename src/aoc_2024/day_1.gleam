@@ -44,7 +44,7 @@ pub fn pt_1(input: String) -> Int {
 
   list.zip(left, right)
   |> list.map(difference)
-  |> list.fold(from: 0, with: int.add)
+  |> int.sum
 }
 
 fn similarity(number: Int, right_list: List(Int)) -> Int {
@@ -63,5 +63,5 @@ pub fn pt_2(input: String) -> Int {
 
   left
   |> list.map(similarity)
-  |> list.fold(from: 0, with: int.add)
+  |> int.sum
 }
