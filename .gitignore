@@ -3,5 +3,5 @@
 /build
 erl_crash.dump
 
-inputs/*
-!inputs/.gitkeep
+input/*
+!input/.gitkeep

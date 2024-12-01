@@ -1,9 +1,7 @@
 import gleam/int
-import gleam/io
 import gleam/list
 import gleam/result
 import gleam/string
-import simplifile
 
 /// Convert a list into a list of size 2 tuples. 
 /// Panics on uneven-lengthed lists! This should probably return a Result instead.
@@ -45,8 +43,7 @@ fn parse_input(input: String) -> #(List(Int), List(Int)) {
   |> list.unzip
 }
 
-pub fn run() -> String {
-  let assert Ok(input) = simplifile.read(from: "./inputs/p1.txt")
+pub fn pt_1(input: String) -> Int {
   let #(list_a, list_b) = parse_input(input)
 
   let list_a = list.sort(list_a, by: int.compare)
@@ -57,5 +54,8 @@ pub fn run() -> String {
     let #(a, b) = tuple
     acc + int.absolute_value(a - b)
   })
-  |> int.to_string
+}
+
+pub fn pt_2(input: String) -> Int {
+  todo
 }
