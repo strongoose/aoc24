@@ -12,18 +12,15 @@ pub fn parse(input: String) -> List(Report) {
     |> string.trim()
     |> string.split(on: "\n")
 
-  let reports =
-    list.map(lines, fn(line) {
-      let assert Ok(report) =
-        line
-        |> string.split(on: " ")
-        |> list.map(int.parse)
-        |> result.all
+  list.map(lines, fn(line) {
+    let assert Ok(report) =
+      line
+      |> string.split(on: " ")
+      |> list.map(int.parse)
+      |> result.all
 
-      report
-    })
-
-  reports
+    report
+  })
 }
 
 fn is_safe(report: Report) -> Bool {
@@ -62,14 +59,12 @@ pub fn pt_1(input: List(Report)) {
 
 fn is_safe_with_problem_dampening(report: Report) -> Bool {
   report
-  |> list.index_map(fn(_, i) {
-    // The back half of the split will always have at least 1 element, because i is at most length - 1
-    let assert #(front, [_, ..tail]) = list.split(report, i)
-    list.append(front, tail)
-  })
+  |> list.combinations(list.length(report) - 1)
   |> list.any(is_safe)
 }
 
 pub fn pt_2(input: List(Report)) {
-  list.count(input, where: is_safe_with_problem_dampening)
+  list.count(input, fn(report) {
+    is_safe(report) || is_safe_with_problem_dampening(report)
+  })
 }
