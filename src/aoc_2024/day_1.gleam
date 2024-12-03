@@ -56,12 +56,12 @@ pub fn pt_2(input: #(List(Int), List(Int))) -> Int {
   let counts = count_all(right)
 
   let similarity = fn(number) {
-    let occurences =
+    let occurrences =
       counts
       |> dict.get(number)
       |> result.unwrap(0)
 
-    number * occurences
+    number * occurrences
   }
 
   left
