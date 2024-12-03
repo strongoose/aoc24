@@ -1,3 +1,5 @@
+import gleam/dict.{type Dict}
+import gleam/function
 import gleam/int
 import gleam/list
 import gleam/result
@@ -11,7 +13,7 @@ import aoc_2024/lib.{chunk_by_2}
 ///   4   10
 /// ...  ...
 ///
-fn parse_input(input: String) -> #(List(Int), List(Int)) {
+pub fn parse(input: String) -> #(List(Int), List(Int)) {
   let lines =
     input
     |> string.trim
@@ -31,35 +33,36 @@ fn parse_input(input: String) -> #(List(Int), List(Int)) {
   list.unzip(pairs)
 }
 
-pub fn pt_1(input: String) -> Int {
-  let #(left, right) = parse_input(input)
+pub fn pt_1(input: #(List(Int), List(Int))) -> Int {
+  let #(left, right) = input
 
   let left = list.sort(left, by: int.compare)
   let right = list.sort(right, by: int.compare)
 
-  let difference = fn(tuple) {
-    let #(a, b) = tuple
-    int.absolute_value(a - b)
-  }
+  let difference = fn(a, b) { int.absolute_value(a - b) }
 
-  list.zip(left, right)
-  |> list.map(difference)
+  list.map2(left, right, difference)
   |> int.sum
 }
 
-fn similarity(number: Int, right_list: List(Int)) -> Int {
-  let occurences =
-    right_list
-    |> list.filter(keeping: fn(x) { x == number })
-    |> list.length
-
-  number * occurences
+fn count_all(items: List(value)) -> Dict(value, Int) {
+  list.group(items, function.identity)
+  |> dict.map_values(fn(_, vs) { list.length(vs) })
 }
 
-pub fn pt_2(input: String) -> Int {
-  let #(left, right) = parse_input(input)
+pub fn pt_2(input: #(List(Int), List(Int))) -> Int {
+  let #(left, right) = input
 
-  let similarity = similarity(_, right)
+  let counts = count_all(right)
+
+  let similarity = fn(number) {
+    let occurences =
+      counts
+      |> dict.get(number)
+      |> result.unwrap(0)
+
+    number * occurences
+  }
 
   left
   |> list.map(similarity)
