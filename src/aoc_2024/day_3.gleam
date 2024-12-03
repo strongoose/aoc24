@@ -12,35 +12,28 @@ pub fn parse(input: String) -> List(Op) {
   loop_parse(input, []) |> list.reverse
 }
 
+// Main parse loop
+// parse_mul will return here when complete, or when parsing fails
 fn loop_parse(input: String, ops: List(Op)) -> List(Op) {
-  case input, parse_op(input) {
-    "", _ -> ops
-    _, #(Ok(op), remaining_input) -> loop_parse(remaining_input, [op, ..ops])
-    _, #(_, remaining_input) -> loop_parse(remaining_input, ops)
-  }
-}
-
-fn parse_op(input: String) -> #(Result(Op, Nil), String) {
   case input {
-    "mul(" <> rest -> parse_operands(rest)
-    "do()" <> rest -> #(Ok(Do), rest)
-    "don't()" <> rest -> #(Ok(Dont), rest)
-    _ -> #(Error(Nil), input |> string.drop_start(1))
+    "" -> ops
+    "do()" <> rest -> loop_parse(rest, [Do, ..ops])
+    "don't()" <> rest -> loop_parse(rest, [Dont, ..ops])
+    "mul(" <> rest -> parse_mul(rest, ops)
+    _ -> loop_parse(string.drop_start(input, 1), ops)
   }
 }
 
-fn parse_operands(input: String) -> #(Result(Op, Nil), String) {
-  use left, input <- parse_number(input)
-  use input <- consume(input, ",")
-  use right, input <- parse_number(input)
-  use input <- consume(input, ")")
-  #(Ok(Mul(left, right)), input)
+fn parse_mul(input: String, ops: List(Op)) -> List(Op) {
+  use left, input <- parse_number(input, ops)
+  use input <- consume(input, ",", ops)
+  use right, input <- parse_number(input, ops)
+  use input <- consume(input, ")", ops)
+
+  loop_parse(input, [Mul(left, right), ..ops])
 }
 
-fn parse_number(
-  input: String,
-  then: fn(Int, String) -> #(Result(Op, Nil), String),
-) -> #(Result(Op, Nil), String) {
+fn parse_number(input: String, ops: List(Op), then) -> List(Op) {
   let #(number, rest) =
     input
     |> string.to_graphemes
@@ -48,27 +41,23 @@ fn parse_number(
       ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] |> list.contains(c)
     })
 
-  case list.length(number) {
+  let number = number |> join("")
+  let rest = rest |> join("")
+
+  case string.length(number) {
     1 | 2 | 3 -> {
-      let assert Ok(number) =
-        number
-        |> join("")
-        |> int.parse
-      then(number, rest |> join(""))
+      let assert Ok(number) = int.parse(number)
+      then(number, rest)
     }
 
-    _ -> #(Error(Nil), rest |> join(""))
+    _ -> loop_parse(rest, ops)
   }
 }
 
-fn consume(
-  input: String,
-  char: String,
-  then: fn(String) -> #(Result(Op, Nil), String),
-) -> #(Result(Op, Nil), String) {
+fn consume(input: String, char: String, ops: List(Op), then) -> List(Op) {
   case string.pop_grapheme(input) {
     Ok(#(grapheme, rest)) if grapheme == char -> then(rest)
-    _ -> #(Error(Nil), input)
+    _ -> loop_parse(input, ops)
   }
 }
 
