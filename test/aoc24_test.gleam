@@ -1,7 +1,10 @@
+import gleam/dict
+
 import gleeunit
 import gleeunit/should
 
 import aoc_2024/day_3.{Do, Dont, Mul}
+import aoc_2024/day_4.{Grid}
 import aoc_2024/lib
 
 pub fn main() {
@@ -34,13 +37,13 @@ pub fn filter_donts_test() {
   |> should.equal([Mul(1, 1), Mul(1, 3)])
 }
 
-pub fn parse_test() {
+pub fn day_3_parse_test() {
   "mul(382,128)select(){*who(710,947)mul(117,325)?$#fr"
   |> day_3.parse()
   |> should.equal([Mul(382, 128), Mul(117, 325)])
 }
 
-pub fn parse_donts_test() {
+pub fn day_3_parse_donts_test() {
   "mul(382,128)don't(){*mul(710,947)mul(117,325)?do()mul(1,3)$#fr"
   |> day_3.parse()
   |> should.equal([
@@ -51,4 +54,21 @@ pub fn parse_donts_test() {
     Do,
     Mul(1, 3),
   ])
+}
+
+pub fn day_4_parse_test() {
+  "abc\ndef"
+  |> day_4.parse
+  |> should.equal(Grid(
+    coords: dict.from_list([
+      #(#(0, 0), "a"),
+      #(#(0, 1), "b"),
+      #(#(0, 2), "c"),
+      #(#(1, 0), "d"),
+      #(#(1, 1), "e"),
+      #(#(1, 2), "f"),
+    ]),
+    width: 3,
+    height: 2,
+  ))
 }
