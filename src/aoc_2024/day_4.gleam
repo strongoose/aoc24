@@ -38,6 +38,10 @@ pub fn parse(input: String) -> Grid(String) {
   Grid(coords, width, height)
 }
 
+fn map_array(arr: List(List(a)), fun: fn(a) -> b) -> List(List(b)) {
+  list.map(arr, list.map(_, fun))
+}
+
 fn add_coords(a: Coord, b: Coord) -> Coord {
   let #(ay, ax) = a
   let #(by, bx) = b
@@ -55,12 +59,7 @@ fn grid_substring(
 }
 
 fn count_xmases_from(grid: Grid(String), start: Coord) -> Int {
-  let add_pairwise = fn(a: List(Coord), b: List(Coord)) {
-    list.map2(a, b, add_coords)
-  }
-
-  let start_array = start |> list.repeat(4)
-  let relative_positions =
+  let relative_substr_coords: List(List(Coord)) =
     range(0, 3)
     |> list.map(fn(i) {
       [
@@ -76,8 +75,9 @@ fn count_xmases_from(grid: Grid(String), start: Coord) -> Int {
     })
     |> list.transpose
 
-  relative_positions
-  |> list.map(add_pairwise(start_array, _))
+  let substr_coords = relative_substr_coords |> map_array(add_coords(start, _))
+
+  substr_coords
   |> list.map(grid_substring(grid, _))
   |> list.filter(fn(substr) {
     case substr {
