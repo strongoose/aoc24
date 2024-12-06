@@ -1,4 +1,5 @@
 import gleam/dict
+import gleam/string
 
 import gleeunit
 import gleeunit/should
@@ -6,6 +7,7 @@ import gleeunit/should
 import aoc_2024/day_3.{Do, Dont, Mul}
 import aoc_2024/day_4.{Grid}
 import aoc_2024/day_5
+import aoc_2024/day_6
 import aoc_2024/lib
 
 pub fn main() {
@@ -81,4 +83,21 @@ pub fn day5_badsort_test() {
   update
   |> day_5.badsort(rules)
   |> should.equal([1, 2, 4])
+}
+
+pub fn day6_loop_detection_test() {
+  // .#.....
+  // ......#
+  // #......
+  // .^...#.
+  [".#.....", "......#", "#......", ".^...#."]
+  |> string.join("\n")
+  |> day_6.parse()
+  |> day_6.execute()
+  |> fn(map) {
+    case map {
+      day_6.Looped(_) -> Nil
+      _ -> should.fail()
+    }
+  }
 }

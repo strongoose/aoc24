@@ -1,6 +1,6 @@
 import gleam/dict.{type Dict}
 import gleam/int
-import gleam/list.{type ContinueOrStop, Continue, Stop}
+import gleam/list
 import gleam/string
 
 type Coordinate =
@@ -22,7 +22,7 @@ pub type Direction {
 
 pub type Cell {
   Obstacle
-  Visited
+  Visited(Direction)
   Unvisited
 }
 
@@ -43,7 +43,7 @@ pub fn parse(input: String) -> Map {
   let cell = case mark {
     "#" -> Obstacle
     "." -> Unvisited
-    "^" -> Visited
+    "^" -> Visited(North)
     _ -> panic as "Bad input"
   }
 
@@ -55,7 +55,7 @@ pub fn parse(input: String) -> Map {
 
   case cell {
     // This is the initial guard position
-    Visited -> Map(..new_map, guard: Guard(..map.guard, at: #(y, x)))
+    Visited(_) -> Map(..new_map, guard: Guard(..map.guard, at: #(y, x)))
     _ -> new_map
   }
 }
@@ -72,7 +72,13 @@ fn pivot_guard(map: Map) -> Map {
   )
 }
 
-pub fn tick(map: Map) -> ContinueOrStop(Map) {
+pub type ContinueStopOrLoop(a) {
+  Continue(a)
+  Stop(a)
+  Loop(a)
+}
+
+pub fn tick(map: Map) -> ContinueStopOrLoop(Map) {
   let next = case map.guard {
     Guard(at, North) -> add_coord(at, #(-1, 0))
     Guard(at, South) -> add_coord(at, #(1, 0))
@@ -81,34 +87,66 @@ pub fn tick(map: Map) -> ContinueOrStop(Map) {
   }
 
   case dict.get(map.cells, next) {
+    // -- End conditions
+    // Out of bounds - the guard has left
     Error(_) -> map |> Stop
+    // A visited location where the guard was facing the same // direction - they're in a loop!
+    Ok(Visited(direction)) if direction == map.guard.facing -> map |> Loop
+
+    // -- Otherwise...
     Ok(Obstacle) -> map |> pivot_guard |> Continue
     Ok(_) ->
       Map(
         ..map,
-        cells: dict.insert(map.cells, next, Visited),
+        cells: dict.insert(map.cells, next, Visited(map.guard.facing)),
         guard: Guard(..map.guard, at: next),
       )
       |> Continue
   }
 }
 
-pub fn execute(map: Map) -> Map {
+pub type Status(a) {
+  Stopped(a)
+  Looped(a)
+}
+
+pub fn execute(map: Map) -> Status(Map) {
   case tick(map) {
     Continue(map) -> execute(map)
-    Stop(map) -> map
+    Stop(map) -> Stopped(map)
+    Loop(map) -> Looped(map)
   }
 }
 
 pub fn pt_1(map: Map) -> Int {
-  let is_visited = fn(cell) { cell == Visited }
+  let is_visited = fn(cell) {
+    case cell {
+      Visited(_) -> True
+      _ -> False
+    }
+  }
+  let assert Stopped(map) = execute(map)
 
-  execute(map).cells
+  map.cells
   |> dict.values()
   |> list.filter(is_visited)
   |> list.length
 }
 
 pub fn pt_2(map: Map) -> Int {
-  todo as "part 2 not implemented"
+  // If we do a basic passthrough first we can use it to skip cells that
+  // the guard never visits
+  let assert Stopped(completed) = execute(map)
+
+  use count, coord, cell <- dict.fold(completed.cells, 0)
+  case cell {
+    Visited(_) -> {
+      let candidate = Map(..map, cells: dict.insert(map.cells, coord, Obstacle))
+      case execute(candidate) {
+        Looped(_) -> count + 1
+        _ -> count
+      }
+    }
+    _ -> count
+  }
 }
