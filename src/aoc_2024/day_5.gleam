@@ -83,6 +83,62 @@ pub fn pt_1(input: #(List(Rule), List(Update))) -> Int {
   |> int.sum
 }
 
+fn violations(update: Update, rules: List(Rule)) -> List(Rule) {
+  use violations, rule <- list.fold(rules, [])
+  case conforms_to(update, rule) {
+    False -> [rule, ..violations]
+    True -> violations
+  }
+}
+
+fn swap(update: Update, rule: Rule) -> Update {
+  let #(small, big) = rule
+  let #(front, rest) =
+    update
+    |> list.split_while(fn(page) { page != small && page != big })
+
+  let assert [a, ..rest] = rest
+
+  let #(middle, rest) =
+    rest
+    |> list.split_while(fn(page) { page != small && page != big })
+
+  let assert [b, ..back] = rest
+
+  list.flatten([front, [b], middle, [a], back])
+}
+
+pub fn badsort(update: Update, rules: List(Rule)) -> Update {
+  let rules =
+    rules
+    |> list.filter(fn(rule) {
+      let #(small, big) = rule
+      list.contains(update, small) && list.contains(update, big)
+    })
+
+  badsort_loop(update, rules)
+}
+
+fn badsort_loop(update: Update, rules: List(Rule)) -> Update {
+  case violations(update, rules) {
+    [] -> update
+    [violation, ..] -> update |> swap(violation) |> badsort_loop(rules)
+  }
+}
+
 pub fn pt_2(input: #(List(Rule), List(Update))) -> Int {
-  todo
+  let #(rules, updates) = input
+
+  updates
+  |> list.filter(fn(update) { !conformant(update, rules) })
+  |> list.map(badsort(_, rules))
+  |> list.map(fn(update) {
+    let half = list.length(update) / 2
+    let assert Ok(middle) =
+      update
+      |> list.drop(half)
+      |> list.first
+    middle
+  })
+  |> int.sum
 }

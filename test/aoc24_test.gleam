@@ -5,6 +5,7 @@ import gleeunit/should
 
 import aoc_2024/day_3.{Do, Dont, Mul}
 import aoc_2024/day_4.{Grid}
+import aoc_2024/day_5
 import aoc_2024/lib
 
 pub fn main() {
@@ -71,4 +72,13 @@ pub fn day_4_parse_test() {
     width: 3,
     height: 2,
   ))
+}
+
+pub fn day5_badsort_test() {
+  let rules = [#(1, 2), #(1, 4), #(2, 3), #(3, 4)]
+  let update = [2, 4, 1]
+
+  update
+  |> day_5.badsort(rules)
+  |> should.equal([1, 2, 4])
 }
