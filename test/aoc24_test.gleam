@@ -8,6 +8,7 @@ import aoc_2024/day_3.{Do, Dont, Mul}
 import aoc_2024/day_4.{Grid}
 import aoc_2024/day_5
 import aoc_2024/day_6
+import aoc_2024/day_7
 import aoc_2024/lib
 
 pub fn main() {
@@ -100,4 +101,14 @@ pub fn day6_loop_detection_test() {
       _ -> should.fail()
     }
   }
+}
+
+pub fn day_7_concat_test() {
+  day_7.concat(12, 109)
+  |> should.equal(12_109)
+}
+
+pub fn day_7_concat_big_test() {
+  day_7.concat(12_191, 1_029_919)
+  |> should.equal(121_911_029_919)
 }
