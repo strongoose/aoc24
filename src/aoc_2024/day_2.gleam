@@ -1,3 +1,4 @@
+import gleam/bool
 import gleam/int
 import gleam/list
 import gleam/result
@@ -7,20 +8,13 @@ type Report =
   List(Int)
 
 pub fn parse(input: String) -> List(Report) {
-  let lines =
-    input
-    |> string.trim()
-    |> string.split(on: "\n")
-
-  list.map(lines, fn(line) {
-    let assert Ok(report) =
-      line
-      |> string.split(on: " ")
-      |> list.map(int.parse)
-      |> result.all
-
-    report
-  })
+  use line <- list.map(string.split(input, "\n"))
+  let assert Ok(report) =
+    line
+    |> string.split(" ")
+    |> list.map(int.parse)
+    |> result.all
+  report
 }
 
 fn is_safe(report: Report) -> Bool {
@@ -53,18 +47,23 @@ fn is_safely_ascending(report: Report) -> Bool {
   })
 }
 
-pub fn pt_1(input: List(Report)) {
-  list.count(input, where: is_safe)
+pub fn pt_1(reports: List(Report)) {
+  reports |> list.count(is_safe)
 }
 
-fn is_safe_with_problem_dampening(report: Report) -> Bool {
+fn dampen(report: Report) -> Result(Report, Nil) {
+  use <- bool.guard(when: is_safe(report), return: Ok(report))
+  let len = list.length(report)
+
   report
-  |> list.combinations(list.length(report) - 1)
-  |> list.any(is_safe)
+  // This produces all variations on the list with one element missing
+  |> list.combinations(len - 1)
+  |> list.find(is_safe)
 }
 
-pub fn pt_2(input: List(Report)) {
-  list.count(input, fn(report) {
-    is_safe(report) || is_safe_with_problem_dampening(report)
-  })
+pub fn pt_2(reports: List(Report)) {
+  reports
+  |> list.map(dampen)
+  |> result.values
+  |> list.count(fn(_) { True })
 }

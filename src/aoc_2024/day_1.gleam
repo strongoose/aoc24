@@ -5,7 +5,7 @@ import gleam/list
 import gleam/result
 import gleam/string
 
-import aoc_2024/lib.{chunk_by_2}
+// import aoc_2024/lib.{chunk_by_2}
 
 /// The elves have made two lists. These are provided as a single text file with two columns, i.e.
 ///   1    2
@@ -14,23 +14,15 @@ import aoc_2024/lib.{chunk_by_2}
 /// ...  ...
 ///
 pub fn parse(input: String) -> #(List(Int), List(Int)) {
-  let lines =
-    input
-    |> string.trim
-    |> string.split(on: "\n")
-
-  let assert Ok(numbers) =
-    lines
-    // The columns are separated by 3 spaces
-    |> list.map(string.split(_, on: "   "))
-    |> list.flatten
-    |> list.map(int.parse)
-    // Flatten the list of Results into a Result containing a list
-    //   List(Result(a, b)) -> Result(List(a), b)
-    |> result.all()
-
-  let assert Ok(pairs) = chunk_by_2(numbers)
-  list.unzip(pairs)
+  input
+  |> string.split("\n")
+  |> list.map(fn(line) {
+    let assert [Ok(a), Ok(b)] =
+      string.split(line, "   ")
+      |> list.map(int.parse)
+    #(a, b)
+  })
+  |> list.unzip
 }
 
 pub fn pt_1(input: #(List(Int), List(Int))) -> Int {

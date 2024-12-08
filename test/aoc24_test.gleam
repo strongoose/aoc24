@@ -9,30 +9,9 @@ import aoc_2024/day_4.{Grid}
 import aoc_2024/day_5
 import aoc_2024/day_6
 import aoc_2024/day_7
-import aoc_2024/lib
 
 pub fn main() {
   gleeunit.main()
-}
-
-// gleeunit test functions end in `_test`
-pub fn chunk_by_2_ok_with_even_length_test() {
-  [1, 2, 3, 4]
-  |> lib.chunk_by_2
-  |> should.be_ok
-  |> should.equal([#(1, 2), #(3, 4)])
-}
-
-pub fn chunk_by_2_ok_with_empty_test() {
-  []
-  |> lib.chunk_by_2
-  |> should.be_ok
-}
-
-pub fn chunk_by_2_err_with_odd_length_test() {
-  [1, 2, 3, 4, 5]
-  |> lib.chunk_by_2
-  |> should.be_error
 }
 
 pub fn filter_donts_test() {
