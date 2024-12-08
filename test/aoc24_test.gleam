@@ -5,7 +5,7 @@ import gleeunit
 import gleeunit/should
 
 import aoc_2024/day_3.{Do, Dont, Mul}
-import aoc_2024/day_4.{Grid}
+import aoc_2024/day_4.{Coord}
 import aoc_2024/day_5
 import aoc_2024/day_6
 import aoc_2024/day_7
@@ -42,18 +42,16 @@ pub fn day_3_parse_donts_test() {
 pub fn day_4_parse_test() {
   "abc\ndef"
   |> day_4.parse
-  |> should.equal(Grid(
-    coords: dict.from_list([
-      #(#(0, 0), "a"),
-      #(#(0, 1), "b"),
-      #(#(0, 2), "c"),
-      #(#(1, 0), "d"),
-      #(#(1, 1), "e"),
-      #(#(1, 2), "f"),
+  |> should.equal(
+    dict.from_list([
+      #(Coord(0, 0), "a"),
+      #(Coord(0, 1), "b"),
+      #(Coord(0, 2), "c"),
+      #(Coord(1, 0), "d"),
+      #(Coord(1, 1), "e"),
+      #(Coord(1, 2), "f"),
     ]),
-    width: 3,
-    height: 2,
-  ))
+  )
 }
 
 pub fn day5_badsort_test() {

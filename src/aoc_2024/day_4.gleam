@@ -3,113 +3,86 @@
 ////
 
 import gleam/dict.{type Dict}
-import gleam/int
 import gleam/list.{range}
 import gleam/result
 import gleam/string
 
-pub type Coord =
-  #(Int, Int)
-
-pub type Grid(a) {
-  Grid(coords: Dict(Coord, a), width: Int, height: Int)
+pub type Coord {
+  Coord(y: Int, x: Int)
 }
 
-pub fn parse(input: String) -> Grid(String) {
-  let char_array =
-    input
-    |> string.split("\n")
-    |> list.map(string.to_graphemes)
+pub type Grid =
+  Dict(Coord, String)
 
-  let assert Ok(first_line) = list.first(char_array)
+pub fn parse(input: String) -> Grid {
+  use grid, line, y <- list.index_fold(string.split(input, "\n"), dict.new())
+  use grid, char, x <- list.index_fold(string.to_graphemes(line), grid)
 
-  let width = list.length(first_line)
-  let height = list.length(char_array)
-
-  let coords =
-    char_array
-    |> list.flatten
-    |> list.index_map(fn(el, i) {
-      let coord = #(i / width, i % width)
-      #(coord, el)
-    })
-    |> dict.from_list
-
-  Grid(coords, width, height)
+  grid |> dict.insert(Coord(y, x), char)
 }
 
-fn map_array(arr: List(List(a)), fun: fn(a) -> b) -> List(List(b)) {
-  list.map(arr, list.map(_, fun))
+fn coord_add(a: Coord, b: Coord) -> Coord {
+  let Coord(ay, ax) = a
+  let Coord(by, bx) = b
+  Coord(ay + by, ax + bx)
 }
 
-fn add_coords(a: Coord, b: Coord) -> Coord {
-  let #(ay, ax) = a
-  let #(by, bx) = b
-  #(ay + by, ax + bx)
+fn coord_mul(coord: Coord, by n: Int) -> Coord {
+  let Coord(y, x) = coord
+  Coord(n * y, n * x)
 }
 
-fn grid_substring(
-  grid: Grid(String),
-  coords: List(Coord),
-) -> Result(String, Nil) {
+/// Fetch the substring corresponding to a list of coordinates from the grid.
+/// Returns an error if *any* coordinate is out of bounds
+fn grid_substring(grid: Grid, coords: List(Coord)) -> Result(String, Nil) {
   coords
-  |> list.map(dict.get(grid.coords, _))
+  |> list.map(dict.get(grid, _))
   |> result.all
   |> result.map(string.join(_, ""))
 }
 
-fn count_xmases_from(grid: Grid(String), start: Coord) -> Int {
-  let relative_substr_coords: List(List(Coord)) =
+fn count_xmases_from(grid: Grid, start: Coord) -> Int {
+  let directions = [
+    Coord(0, 1),
+    Coord(0, -1),
+    Coord(1, 0),
+    Coord(-1, 0),
+    Coord(1, 1),
+    Coord(1, -1),
+    Coord(-1, 1),
+    Coord(-1, -1),
+  ]
+
+  use direction <- list.count(directions)
+  let substring =
     range(0, 3)
-    |> list.map(fn(i) {
-      [
-        #(0, i),
-        #(0, -i),
-        #(i, 0),
-        #(-i, 0),
-        #(i, i),
-        #(i, -i),
-        #(-i, i),
-        #(-i, -i),
-      ]
+    |> list.map(fn(distance) {
+      coord_add(start, coord_mul(direction, distance))
     })
-    |> list.transpose
-
-  let substr_coords = relative_substr_coords |> map_array(add_coords(start, _))
-
-  substr_coords
-  |> list.map(grid_substring(grid, _))
-  |> list.filter(fn(substr) {
-    case substr {
-      Ok("XMAS") -> True
-      _ -> False
-    }
-  })
-  |> list.length
+    |> grid_substring(grid, _)
+  case substring {
+    Ok("XMAS") -> True
+    _ -> False
+  }
 }
 
-pub fn pt_1(input: Grid(String)) -> Int {
-  input.coords
-  |> dict.to_list
-  |> list.map(fn(kv) {
-    let #(coord, char) = kv
-    case char {
-      "X" -> count_xmases_from(input, coord)
-      _ -> 0
-    }
-  })
-  |> int.sum
+pub fn pt_1(input: Grid) -> Int {
+  use total, #(coord, char) <- list.fold(dict.to_list(input), 0)
+  case char {
+    "X" -> total + count_xmases_from(input, coord)
+    _ -> total
+  }
 }
 
-fn is_x_mas(grid: Grid(String), coord: Coord) -> Bool {
+fn is_x_mas(grid: Grid, start: Coord) -> Bool {
   let firstmas =
-    [#(-1, -1), #(0, 0), #(1, 1)]
-    |> list.map(add_coords(coord, _))
+    [Coord(-1, -1), Coord(0, 0), Coord(1, 1)]
+    |> list.map(coord_add(start, _))
     |> grid_substring(grid, _)
 
   let secondmas =
-    [#(-1, 1), #(0, 0), #(1, -1)]
-    |> list.map(add_coords(coord, _))
+    [Coord(-1, 1), Coord(0, 0), Coord(1, -1)]
+    |> list.map(coord_add(start, _))
     |> grid_substring(grid, _)
 
   case firstmas, secondmas {
@@ -122,15 +95,10 @@ fn is_x_mas(grid: Grid(String), coord: Coord) -> Bool {
   }
 }
 
-pub fn pt_2(input: Grid(String)) -> Int {
-  input.coords
-  |> dict.to_list
-  |> list.filter(fn(kv) {
-    let #(coord, char) = kv
-    case char {
-      "A" -> is_x_mas(input, coord)
-      _ -> False
-    }
-  })
-  |> list.length
+pub fn pt_2(input: Grid) -> Int {
+  use #(coord, char) <- list.count(dict.to_list(input))
+  case char {
+    "A" -> is_x_mas(input, coord)
+    _ -> False
+  }
 }
