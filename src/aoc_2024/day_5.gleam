@@ -1,6 +1,6 @@
 import gleam/bool
 import gleam/int
-import gleam/list.{Continue, Stop}
+import gleam/list
 import gleam/result
 import gleam/string
 
