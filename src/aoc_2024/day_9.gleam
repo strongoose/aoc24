@@ -1,72 +1,92 @@
+import gleam/bool
+import gleam/dict.{type Dict}
 import gleam/int
 import gleam/list
-import gleam/pair
 import gleam/string
 
-pub type Block {
-  FileBlock(id: Int)
-  EmptyBlock
+pub type Disk {
+  Disk(blocks: Dict(Int, Block), front_head: Int, back_head: Int)
 }
 
-// Note that the list of blocks is in reverse order - this will make the compacting easier
-pub fn parse(input: String) -> List(Block) {
+pub type Block {
+  File(id: Int)
+  Empty
+}
+
+pub fn parse(input: String) -> Disk {
+  let blocks =
+    input
+    |> parse_blocks
+    |> list.reverse
+    |> list.index_map(fn(block, i) { #(i, block) })
+
+  Disk(dict.from_list(blocks), 0, list.length(blocks) - 1)
+}
+
+// Note that the list of blocks is in reverse order
+pub fn parse_blocks(input: String) -> List(Block) {
   use blocks, size, index <- list.index_fold(string.to_graphemes(input), [])
   let assert Ok(size) = int.parse(size)
 
   case index % 2 == 0 {
-    True -> list.repeat(FileBlock(id: index / 2), size) |> list.append(blocks)
-    False -> list.repeat(EmptyBlock, size) |> list.append(blocks)
+    True -> list.repeat(File(id: index / 2), size) |> list.append(blocks)
+    False -> list.repeat(Empty, size) |> list.append(blocks)
   }
 }
 
-fn compact_blocks(blocks: List(Block)) -> List(Block) {
-  // Example:
-  //   disk = 5...4..3210
-  //   compacted = 3210
-  //   uncompacted = 5...4..
-  //
-  // So to reassemble the blocks we just 
-  // list.append(uncompacted, compacted)
-
-  let #(compacted, uncompacted) =
-    blocks
-    |> list.reverse
-    |> list.split_while(fn(block) { block != EmptyBlock })
-    |> pair.map_first(list.reverse)
-    |> pair.map_second(list.reverse)
-
-  compact_blocks_loop(compacted, uncompacted)
+fn advance_front(disk: Disk) -> Disk {
+  Disk(..disk, front_head: disk.front_head + 1)
 }
 
-fn compact_blocks_loop(
-  compacted: List(Block),
-  uncompacted: List(Block),
-) -> List(Block) {
-  case uncompacted {
-    [EmptyBlock, ..rest] -> compact_blocks_loop(compacted, rest)
-    [FileBlock(_) as block, ..rest] -> {
-      let uncompacted =
-        rest
-        |> list.reverse
-        |> list.drop(1)
-        |> list.prepend(block)
-        |> list.reverse
+fn advance_back(disk: Disk) -> Disk {
+  Disk(..disk, back_head: disk.back_head - 1)
+}
 
-      list.append(uncompacted, compacted) |> compact_blocks
-    }
-    [] -> compacted
+fn read_front(disk: Disk) -> Block {
+  let assert Ok(block) = disk.blocks |> dict.get(disk.front_head)
+  block
+}
+
+fn read_back(disk: Disk) -> Block {
+  let assert Ok(block) = disk.blocks |> dict.get(disk.back_head)
+  block
+}
+
+fn write_front(disk: Disk, block: Block) -> Disk {
+  Disk(..disk, blocks: disk.blocks |> dict.insert(disk.front_head, block))
+}
+
+fn write_back(disk: Disk, block: Block) -> Disk {
+  Disk(..disk, blocks: disk.blocks |> dict.insert(disk.back_head, block))
+}
+
+fn swap(disk: Disk) -> Disk {
+  let #(front, back) = #(read_front(disk), read_back(disk))
+  disk
+  |> write_front(back)
+  |> write_back(front)
+}
+
+fn compact(disk: Disk) -> Disk {
+  use <- bool.guard(when: disk.front_head >= disk.back_head, return: disk)
+  case read_front(disk), read_back(disk) {
+    Empty, File(_) -> disk |> swap |> advance_front |> compact
+    File(_), _ -> disk |> advance_front |> compact
+    _, Empty -> disk |> advance_back |> compact
   }
 }
 
-pub fn pt_1(blocks: List(Block)) {
-  let blocks = compact_blocks(blocks)
-  use checksum, block, index <- list.index_fold(list.reverse(blocks), 0)
+pub fn pt_1(disk: Disk) {
+  use checksum, #(index, block) <- list.fold(
+    dict.to_list(compact(disk).blocks),
+    0,
+  )
   case block {
-    FileBlock(id) -> checksum + id * index
-    _ -> checksum
+    File(id) -> checksum + id * index
+    Empty -> checksum
   }
 }
 
-pub fn pt_2(blocks: List(Block)) {
+pub fn pt_2(disk: Disk) {
   todo as "part 2 not implemented"
 }
