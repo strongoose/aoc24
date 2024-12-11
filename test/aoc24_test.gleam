@@ -4,6 +4,7 @@ import gleam/string
 import gleeunit
 import gleeunit/should
 
+import aoc_2024/day_11
 import aoc_2024/day_3.{Do, Dont, Mul}
 import aoc_2024/day_4.{Coord}
 import aoc_2024/day_5
@@ -106,4 +107,73 @@ pub fn day_9_compact_files_test() {
   |> day_9.compact_files
   |> day_9.disk_to_str
   |> should.equal("00992111777.44.333....5555.6666.....8888..")
+}
+
+// -- Day 11 --
+
+pub fn day_11_blink_1_test() {
+  "125 17"
+  |> day_11.parse
+  |> day_11.blink
+  |> should.equal("253000 1 7" |> day_11.parse)
+}
+
+pub fn day_11_blink_2_test() {
+  "125 17"
+  |> day_11.parse
+  |> day_11.blink
+  |> day_11.blink
+  |> dict.filter(fn(_, n) { n != 0 })
+  |> should.equal("253 0 2024 14168" |> day_11.parse)
+}
+
+pub fn day_11_blink_3_test() {
+  "125 17"
+  |> day_11.parse
+  |> day_11.blink
+  |> day_11.blink
+  |> day_11.blink
+  |> dict.filter(fn(_, n) { n != 0 })
+  |> should.equal("512072 1 20 24 28676032" |> day_11.parse)
+}
+
+pub fn day_11_blink_4_test() {
+  "125 17"
+  |> day_11.parse
+  |> day_11.blink
+  |> day_11.blink
+  |> day_11.blink
+  |> day_11.blink
+  |> dict.filter(fn(_, n) { n != 0 })
+  |> should.equal("512 72 2024 2 0 2 4 2867 6032" |> day_11.parse)
+}
+
+pub fn day_11_blink_5_test() {
+  "125 17"
+  |> day_11.parse
+  |> day_11.blink
+  |> day_11.blink
+  |> day_11.blink
+  |> day_11.blink
+  |> day_11.blink
+  |> dict.filter(fn(_, n) { n != 0 })
+  |> should.equal(
+    "1036288 7 2 20 24 4048 1 4048 8096 28 67 60 32" |> day_11.parse,
+  )
+}
+
+pub fn day_11_blink_6_test() {
+  "125 17"
+  |> day_11.parse
+  |> day_11.blink
+  |> day_11.blink
+  |> day_11.blink
+  |> day_11.blink
+  |> day_11.blink
+  |> day_11.blink
+  |> dict.filter(fn(_, n) { n != 0 })
+  |> should.equal(
+    "2097446912 14168 4048 2 0 2 4 40 48 2024 40 48 80 96 2 8 6 7 6 0 3 2"
+    |> day_11.parse,
+  )
 }
