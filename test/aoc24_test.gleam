@@ -9,6 +9,7 @@ import aoc_2024/day_4.{Coord}
 import aoc_2024/day_5
 import aoc_2024/day_6
 import aoc_2024/day_7
+import aoc_2024/day_9
 
 pub fn main() {
   gleeunit.main()
@@ -88,4 +89,21 @@ pub fn day_7_concat_test() {
 pub fn day_7_concat_big_test() {
   day_7.concat(12_191, 1_029_919)
   |> should.equal(121_911_029_919)
+}
+
+// -- Day 9 --
+
+pub fn day_9_helpers_test() {
+  "00..111.233..4"
+  |> day_9.str_to_disk
+  |> day_9.disk_to_str
+  |> should.equal("00..111.233..4")
+}
+
+pub fn day_9_compact_files_test() {
+  "00...111...2...333.44.5555.6666.777.888899"
+  |> day_9.str_to_disk
+  |> day_9.compact_files
+  |> day_9.disk_to_str
+  |> should.equal("00992111777.44.333....5555.6666.....8888..")
 }
