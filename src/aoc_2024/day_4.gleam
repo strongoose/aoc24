@@ -7,12 +7,7 @@ import gleam/list.{range}
 import gleam/result
 import gleam/string
 
-pub type Coord {
-  Coord(y: Int, x: Int)
-}
-
-pub type Grid =
-  Dict(Coord, String)
+import aoc_2024/lib.{type Coord, type Grid, Coord}
 
 pub fn parse(input: String) -> Grid {
   use grid, line, y <- list.index_fold(string.split(input, "\n"), dict.new())

@@ -1,16 +1,19 @@
 import gleam/dict
+import gleam/list
 import gleam/string
 
 import gleeunit
 import gleeunit/should
 
 import aoc_2024/day_11
+import aoc_2024/day_12.{Region}
 import aoc_2024/day_3.{Do, Dont, Mul}
-import aoc_2024/day_4.{Coord}
+import aoc_2024/day_4
 import aoc_2024/day_5
 import aoc_2024/day_6
 import aoc_2024/day_7
 import aoc_2024/day_9
+import aoc_2024/lib.{type Coord, Coord}
 
 pub fn main() {
   gleeunit.main()
@@ -176,4 +179,49 @@ pub fn day_11_blink_6_test() {
     "2097446912 14168 4048 2 0 2 4 40 48 2024 40 48 80 96 2 8 6 7 6 0 3 2"
     |> day_11.parse,
   )
+}
+
+// -- Day 12 --
+
+pub fn day_12_parse_test() {
+  let to_region = fn(coord_list, kind) {
+    use region, coord <- list.fold(coord_list, Region(kind, dict.new()))
+    day_12.extend(region, coord)
+  }
+
+  // AAAA
+  // BBCD
+  // BBCC
+  // EEEC
+  "AAAA\nBBCD\nBBCC\nEEEC"
+  |> day_12.parse
+  |> should.equal([
+    [Coord(3, 0), Coord(3, 1), Coord(3, 2)] |> to_region("E"),
+    [Coord(1, 3)] |> to_region("D"),
+    [Coord(1, 2), Coord(2, 2), Coord(2, 3), Coord(3, 3)] |> to_region("C"),
+    [Coord(1, 0), Coord(1, 1), Coord(2, 0), Coord(2, 1)] |> to_region("B"),
+    [Coord(0, 0), Coord(0, 1), Coord(0, 2), Coord(0, 3)] |> to_region("A"),
+  ])
+}
+
+pub fn day_12_corner_count_test() {
+  // AAAA
+  // BBCD
+  // BBCC
+  // EEEC
+  "AAAA\nBBCD\nBBCC\nEEEC"
+  |> day_12.parse
+  |> list.map(day_12.corner_count)
+  |> should.equal([
+    // E
+    4,
+    // D
+    4,
+    // C
+    8,
+    // B
+    4,
+    // A
+    4,
+  ])
 }
