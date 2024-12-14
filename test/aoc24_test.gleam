@@ -20,6 +20,17 @@ pub fn main() {
   gleeunit.main()
 }
 
+// -- Shared --
+
+pub fn print_grid_test() {
+  "123\n456\n789"
+  |> lib.grid_from_string
+  |> lib.grid_to_string
+  |> should.equal("123\n456\n789")
+}
+
+// -- Day 3 --
+
 pub fn filter_donts_test() {
   [Mul(1, 1), Dont, Do, Dont, Mul(1, 2), Dont, Do, Mul(1, 3)]
   |> day_3.filter_donts

@@ -2,10 +2,10 @@ import gleam/bool
 import gleam/dict
 import gleam/int
 import gleam/io
-import gleam/list
+import gleam/list.{Continue, Stop}
 import gleam/string
 
-import aoc_2024/lib.{type Coord, Coord, add_coord, scale_coord}
+import aoc_2024/lib.{type Coord, type Grid, Coord, add_coord, scale_coord}
 
 const max_y = 102
 
@@ -76,6 +76,68 @@ pub fn pt_1(robots: List(Robot)) {
   |> int.product
 }
 
+fn tick(robots: List(Robot)) -> List(Robot) {
+  robots
+  |> list.map(fn(robot) {
+    let position =
+      add_coord(robot.position, robot.velocity)
+      |> wrap
+
+    Robot(..robot, position:)
+  })
+}
+
+fn ticks_until(
+  robots: List(Robot),
+  condition: fn(List(Robot)) -> Bool,
+) -> #(Int, List(Robot)) {
+  ticks_until_loop(0, robots, condition)
+}
+
+fn ticks_until_loop(acc: Int, robots, condition) {
+  let robots = tick(robots)
+  case condition(robots) {
+    True -> #(acc + 1, robots)
+    False -> ticks_until_loop(acc + 1, robots, condition)
+  }
+}
+
+fn has_horizontal_line(robots: List(Robot), len: Int) -> Bool {
+  let robot_lookup =
+    robots
+    |> list.map(fn(robot) { #(robot.position, Nil) })
+    |> dict.from_list
+
+  use _, robot <- list.fold_until(robots, False)
+
+  let found_line =
+    list.range(1, len)
+    |> list.map(fn(i) { add_coord(robot.position, Coord(0, i)) })
+    |> list.all(dict.has_key(robot_lookup, _))
+
+  case found_line {
+    True -> Stop(True)
+    False -> Continue(False)
+  }
+}
+
+fn to_grid(robots: List(Robot)) -> Grid {
+  use grid, robot <- list.fold(robots, dict.new())
+  grid |> dict.insert(robot.position, "X")
+}
+
+/// If there are, idk, 10 robots in a horizontal line, that seems like
+/// it might be an xmas tree
 pub fn pt_2(robots: List(Robot)) {
-  todo as "part 2 not implemented"
+  let #(i, robots) =
+    robots
+    |> ticks_until(has_horizontal_line(_, 10))
+
+  robots
+  |> to_grid
+  |> lib.grid_to_string
+  |> io.println
+  // Holy shit, I was right??
+
+  i
 }
