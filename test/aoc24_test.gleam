@@ -7,6 +7,7 @@ import gleeunit/should
 
 import aoc_2024/day_11
 import aoc_2024/day_12.{Region}
+import aoc_2024/day_13.{Equation}
 import aoc_2024/day_3.{Do, Dont, Mul}
 import aoc_2024/day_4
 import aoc_2024/day_5
@@ -224,4 +225,22 @@ pub fn day_12_corner_count_test() {
     // A
     4,
   ])
+}
+
+// -- Day 13 --
+
+pub fn day_13_eq_with_solution_test() {
+  let eq_x = Equation(94, 22, 8400)
+  let eq_y = Equation(34, 67, 5400)
+
+  day_13.solve(eq_x, eq_y)
+  |> should.equal(Ok(#(80, 40)))
+}
+
+pub fn day_13_eq_without_solution_test() {
+  let eq_x = Equation(26, 67, 12_748)
+  let eq_y = Equation(66, 21, 12_176)
+
+  day_13.solve(eq_x, eq_y)
+  |> should.equal(Error(Nil))
 }
