@@ -1,7 +1,4 @@
-import gleam/bool
-import gleam/dict.{type Dict}
-import gleam/int
-import gleam/io
+import gleam/dict
 import gleam/list
 import gleam/string
 

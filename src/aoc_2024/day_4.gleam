@@ -2,7 +2,7 @@
 //// This one took me a long time - I completely refactored part 1 after writing is_x_mas for part 2 and being inordinately pleased with it.
 ////
 
-import gleam/dict.{type Dict}
+import gleam/dict
 import gleam/list.{range}
 import gleam/result
 import gleam/string
